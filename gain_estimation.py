@@ -175,6 +175,7 @@ class GainEstimation:
         plt.xlabel('Length [mm]')
         plt.ylabel('Input power [mW]')
         ax.set_zlabel('Power [mW]')
+        fig.savefig('amp_loss_surface.pdf')
         plt.show()
 
     def plot_amp_loss(self, modes: list = [1, 3],
@@ -198,7 +199,7 @@ class GainEstimation:
         -------
 
         """
-
+        fig = plt.figure()
         for mode in modes:
             self.number_of_modes = mode
             for power in powers:
@@ -210,5 +211,6 @@ class GainEstimation:
         plt.xlim(x_lim[0], x_lim[1])
         plt.xlabel('Length [mm]')
         plt.ylabel('Power [mW]')
+        fig.savefig('amp_loss.pdf')
         plt.show()
 
