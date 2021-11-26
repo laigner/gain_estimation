@@ -1,7 +1,7 @@
-import gain_estimation as ge
+from gain_estimation import GainEstimation
 
 #Initialize the class object here, use default values or explicitly define the parameter
-simulation = ge.GainEstimation(initial_pump_power=0.1, number_of_modes=1)
+simulation = GainEstimation(initial_pump_power=0.1, number_of_modes=1)
 
 #now one can easily access the parameter or methods defined in gain_estimation.py
 
