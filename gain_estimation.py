@@ -125,10 +125,12 @@ class GainEstimation:
         power_result = []
         old_gain = 0
         loss = 0
+        pump = []
         for index, length in enumerate(self.length_array):
             pump_power_per_mode = self.calculate_pump_power_per_mode(
                 length=length,
                 loss=loss)
+            print(pump_power_per_mode)
             gain_per_mode = self.calculate_gain_per_mode(
                 pump_power_per_mode=pump_power_per_mode, length=length, index=index)
             losses_band = self.calculate_losses_in_amp_band(
@@ -141,11 +143,12 @@ class GainEstimation:
                 index=index)
             power_result.append(power_after_crystal)
             if length == self.length_min:
-                loss = 0
+                loss = 0.1
             elif index == 1:
                 loss = power_after_crystal - power_result[-1]
             else:
                 loss = power_after_crystal - power_result[-2]
+                print(loss)
         return power_result
 
     def plot_amp_loss_surface(self, modes: list = [1, 3],

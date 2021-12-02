@@ -1,7 +1,7 @@
 from gain_estimation import GainEstimation
 
 # Initialize the class object here, use default values or explicitly define the parameter
-simulation = GainEstimation(initial_pump_power=200, number_of_modes=1)
+simulation = GainEstimation(initial_pump_power=200, number_of_modes=1, losses_sled= 0)
 
 # now one can easily access the parameter or methods defined in gain_estimation.py
 
@@ -20,6 +20,6 @@ simulation = GainEstimation(initial_pump_power=200, number_of_modes=1)
 # simulation.plot_amp_loss()
 
 result = simulation.get_power_after_crystal_list()
-print(result)
+#print(result)
 simulation.plot_amp_loss()
-simulation.plot_amp_loss_surface()
+#simulation.plot_amp_loss_surface()
