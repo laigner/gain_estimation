@@ -1,20 +1,10 @@
 from gain_estimation import GainEstimation
 
-#Initialize the class object here, use default values or explicitly define the parameter
-simulation = GainEstimation(initial_pump_power=0.1, number_of_modes=1)
+# Initialize the class object here, use default values or explicitly define the parameter
+simulation = GainEstimation(losses_pump=1, losses_sled=1, stepsize=0.01, length_max=50)
 
-#now one can easily access the parameter or methods defined in gain_estimation.py
+# Plot power after crystal plot
+simulation.plot_amplification(modes=[1, 3], powers=[10, 50, 100, 200])
 
-#e.g.
-
-#Just printing the set initial_pump_power
-print(simulation.initial_pump_power)
-
-#Printing a list containing the values of the power after the crystal
-print(simulation.calculate_power_after_crystal())
-
-#Plot a surface plot of input power output and length
-simulation.plot_amp_loss_surface()
-
-#Plot normal plot
-simulation.plot_amp_loss()
+# Plot loss and amplification
+simulation.plot_amplification_and_loss(modes=[1, 3], powers=[100, 200])
