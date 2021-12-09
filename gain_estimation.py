@@ -223,7 +223,7 @@ class GainEstimation:
         plt.xlabel("Length [mm]")
         plt.ylabel("Power [mW]")
         # save figure
-        fig.savefig("amp_loss.pdf")
+        fig.savefig("amplification_in_band.pdf")
         plt.show()
 
     def plot_amplification_and_loss(self, modes: list = [1], powers: list = [100]):
@@ -264,7 +264,7 @@ class GainEstimation:
         plt.xlabel("Length [mm]")
         plt.ylabel("Power [mW]")
         # save figure
-        fig.savefig("amp_loss.pdf")
+        fig.savefig("amplification_and_loss_in_band.pdf")
         plt.show()
 
     # def plot_amp_loss_surface(self, modes: list = [1, 3],
