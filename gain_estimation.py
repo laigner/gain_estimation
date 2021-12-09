@@ -127,27 +127,30 @@ class GainEstimation:
         return gain_per_mode
 
     def calculate_amplification_in_amp_band(self, gain_per_mode, length, old_gain) -> float:
-        """Calculate the losses & and amplification in the amplification band
+        """Calculate the amplification in the amplification band
 
         Returns
         -------
         losses_band: float
-            losses & amplification in the amplification band
+            amplification in the amplification band
         """
         if length == 0:
-            losses_band = np.sinh(gain_per_mode) ** 2 + 1
+            amp_band = np.sinh(gain_per_mode) ** 2 + 1
         else:
-            losses_band = (np.sinh(gain_per_mode + old_gain) ** 2 + 1) * 10 ** (
+            amp_band = (np.sinh(gain_per_mode + old_gain) ** 2 + 1) * 10 ** (
                     -length * self.losses_sled / 100
             )
-        return losses_band
+        return amp_band
 
     def get_amplification_list(self) -> tuple[list[float], list[float]]:
-        """returns a list of the power after the crystal and the loss after the crystal
+        """returns a lists of amplification and amplification with losses within the band
 
         Returns
         -------
-
+        amplification_result: list
+            contains amplification within amp band for different crystal lengths
+        amplification_and_loss: list
+            contains amplification with loss within amp band for different crystal lengths
         """
         amplification_result = []
         amplification_and_loss = []
@@ -167,7 +170,7 @@ class GainEstimation:
             )
             # sum old gain per mode with new gain per mode
             old_gain += gain_per_mode
-            # calculate losses in amp band
+            # calculate amp in amp band
             amplification_band = self.calculate_amplification_in_amp_band(gain_per_mode=gain_per_mode, length=length,
                                                                           old_gain=old_gain)
 
@@ -186,7 +189,7 @@ class GainEstimation:
         return amplification_result, amplification_and_loss
 
     def plot_amplification(self, modes: list = [1], powers: list = [100]):
-        """Plot power after crystal over crystal length for different number of modes
+        """Plot amplification within band over crystal length for different number of modes
          as line plots
 
         Parameters
@@ -195,14 +198,6 @@ class GainEstimation:
             contains the specific numbers of modes to analyse
         powers: list
             contains the different powers to analyse at
-        y_lim: list
-            contains minimum and maximum y value for plotting
-        x_lim: list
-            contains minimum and maximum x value for plotting
-
-        Returns
-        -------
-
         """
         # create figure
         fig = plt.figure()
@@ -227,7 +222,7 @@ class GainEstimation:
         plt.show()
 
     def plot_amplification_and_loss(self, modes: list = [1], powers: list = [100]):
-        """Plot power after crystal over crystal length for different number of modes
+        """Plot amplification and losses in the amplification band over crystal length for different number of modes
          as line plots
 
         Parameters
@@ -236,14 +231,6 @@ class GainEstimation:
             contains the specific numbers of modes to analyse
         powers: list
             contains the different powers to analyse at
-        y_lim: list
-            contains minimum and maximum y value for plotting
-        x_lim: list
-            contains minimum and maximum x value for plotting
-
-        Returns
-        -------
-
         """
         # create figure
         fig = plt.figure()
