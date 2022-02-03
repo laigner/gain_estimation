@@ -6,20 +6,21 @@ class AmplificationEstimation:
     """Class to estimate the amplification within a crystal"""
 
     def __init__(
-        self,
-        power_signal: float = 1.0,
-        power_pump: float = 100.0,
-        absorption_signal: float = 2.3,
-        absorption_pump: float = 2.3,
-        wavelength_signal: float = 400.0,
-        wavelength_pump: float = 500.0,
-        subdivisions: int = 100,
-        max_length: float = 100.0,
-        max_step: float = 1,
-        mode_size_z: float = 0.7,
-        mode_size_y: float = 0.7,
-        power_array: list = [100, 200, 300],
-        min_power: float = 0
+            self,
+            power_signal: float = 1,
+            power_pump: float = 50.0,
+            absorption_signal: float = 0.25,
+            absorption_pump: float = 0.5,
+            wavelength_signal: float = 635.0,
+            wavelength_pump: float = 408.0,
+            subdivisions: int = 100,
+            max_length: float = 20.0,
+            max_step: float = 0.5,
+            mode_size_z: float = 0.7,
+            mode_size_y: float = 0.7,
+            power_array: list = [30, 60],
+            min_power: float = 0,
+            seed_bandwidth: float = 0.2,
     ):
         """
         Initialization of the class instance
@@ -51,6 +52,8 @@ class AmplificationEstimation:
         power_array: list
             contains the input power which should compared within the plot of the power
             after crystal
+        min_power
+            miminum possible pump power to stop amplification process, now works only for 0, should be adjusted
         """
         self.power_signal = power_signal
         self.power_pump = power_pump
@@ -70,6 +73,7 @@ class AmplificationEstimation:
         self.power_array = power_array
         self.subdivisions = subdivisions
         self.min_power = min_power
+        self.seed_bandwidth = seed_bandwidth
 
     def calculate_amplification(self, gain_all, length, power_overlap):
         """
@@ -87,9 +91,9 @@ class AmplificationEstimation:
         power of the signal at specific length
         """
         return (
-            power_overlap
-            * np.cosh(gain_all) ** 2
-            * 10 ** (-self.absorption_signal * length / 100)
+                power_overlap
+                * np.cosh(gain_all) ** 2
+                * 10 ** (-self.absorption_signal * length / 100)
         )
 
     def calculate_gain(self, power_pump_j, step):
@@ -113,7 +117,7 @@ class AmplificationEstimation:
             return np.sqrt(power_pump_j) * self.gain_factor * step
 
     def calculate_power_pump_j(
-        self, length, step, gain_all, gain_less, power_pump_j_before, power_overlap
+            self, length, step, gain_all, gain_less, power_pump_j_before, power_overlap
     ):
         """
         Calculate pump power at specific crystal length
@@ -136,10 +140,10 @@ class AmplificationEstimation:
         pump power after specific crystal length
         """
         delta_nl = (
-            -(self.wavelength_signal / self.wavelength_pump)
-            * power_overlap
-            * 10 ** (-(self.absorption_signal * length - step) / 100)
-            * (np.sinh(gain_all) ** 2 - np.sinh(gain_less) ** 2)
+                -(self.wavelength_signal / self.wavelength_pump)
+                * power_overlap
+                * 10 ** (-(self.absorption_signal * length - step) / 100)
+                * (np.sinh(gain_all) ** 2 - np.sinh(gain_less) ** 2)
         )
         delta_lin = 10 ** (-self.absorption_pump * step / 100) * power_pump_j_before
         if power_pump_j_before <= self.min_power:
@@ -160,10 +164,11 @@ class AmplificationEstimation:
         total_signal_power = []
         for length in self.max_length_array:
             if length == 0:
-                bandwidth = 100
+                bandwidth = 10 * self.seed_bandwidth
             else:
                 bandwidth = 3.8 / length
-            seed_overlap = min(bandwidth / 6, 1)
+
+            seed_overlap = min(bandwidth / self.seed_bandwidth, 1)
             power_overlap = seed_overlap * self.power_signal
             pump_power_sublist = []
             amplification_sublist = []
@@ -178,7 +183,7 @@ class AmplificationEstimation:
                     pump_power_sublist.append(power_pump_j)
                 else:
                     if power_pump_j < self.min_power:
-                        power_pump_j = self.min_power
+                        power_pump_j = 0
                     elif power_pump_j > self.power_pump:
                         power_pump_j = self.power_pump
 
@@ -226,14 +231,19 @@ class AmplificationEstimation:
         fig, ax = plt.subplots()
         for power in self.power_array:
             self.power_pump = power
+            power_after = self.calculate_power_after_crystal()[0]
             ax.set_xlabel("Length of crystal [mm]")
             ax.set_ylabel("Signal power [mW]")
             ax.set_xlim(0, self.max_length)
             ax.plot(
                 self.max_length_array,
-                self.calculate_power_after_crystal()[0],
+                power_after,
                 label=f"{power} mW",
             )
+            with open(f"signal_power_{power}.txt", "w") as f:
+                f.write("length [mm]\t signal_power [mW]\n")
+                for counter, length in enumerate(self.max_length_array):
+                    f.write(f"{length}\t {power_after[counter]}\n")
         ax.legend()
         fig.savefig("Power_signal_with_bandwidth.pdf")
 
@@ -241,13 +251,19 @@ class AmplificationEstimation:
         fig, ax = plt.subplots()
         for power in self.power_array:
             self.power_pump = power
+            power_after = self.calculate_power_after_crystal()[1]
             ax.set_xlabel("Length of crystal [mm]")
             ax.set_ylabel("Total power [mW]")
             ax.set_xlim(0, self.max_length)
             ax.plot(
-                self.calculate_power_after_crystal()[1],
+                self.max_length_array,
+                power_after,
                 label=f"{power} mW",
             )
+            with open(f"tot_power_{power}.txt", "w") as f:
+                f.write("length [mm]\t tot_power [mW]\n")
+                for counter, length in enumerate(self.max_length_array):
+                    f.write(f"{length}\t {power_after[counter]}\n")
         ax.legend()
         fig.savefig("Power_total_with_bandwidth.pdf")
 
@@ -255,14 +271,19 @@ class AmplificationEstimation:
         fig, ax = plt.subplots()
         for power in self.power_array:
             self.power_pump = power
+            power_after = self.calculate_power_after_crystal()[2]
             ax.set_xlabel("Length of crystal [mm]")
             ax.set_ylabel("Pump power [mW]")
             ax.set_xlim(0, self.max_length)
             ax.plot(
                 self.max_length_array,
-                self.calculate_power_after_crystal()[2],
+                power_after,
                 label=f"{power} mW",
             )
+            with open(f"pump_power_{power}.txt", "w") as f:
+                f.write("length [mm]\t pump_power [mW]\n")
+                for counter, length in enumerate(self.max_length_array):
+                    f.write(f"{length}\t {power_after[counter]}\n")
         ax.legend()
         fig.savefig("Power_pump_with_bandwidth.pdf")
 

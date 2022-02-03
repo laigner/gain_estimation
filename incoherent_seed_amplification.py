@@ -19,7 +19,8 @@ class AmplificationEstimation:
         mode_size_z: float = 0.7,
         mode_size_y: float = 0.7,
         power_array: list = [100, 200, 300],
-        min_power: float = 0
+        min_power: float = 0,
+        seed_bandwidth: float = 0
     ):
         """
         Initialization of the class instance
@@ -70,6 +71,7 @@ class AmplificationEstimation:
         self.power_array = power_array
         self.subdivisions = subdivisions
         self.min_power = min_power
+        self.seed_bandwidth = seed_bandwidth
 
     def calculate_amplification(self, gain_all, length):
         """
